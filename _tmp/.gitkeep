@@ -1,0 +1,3 @@
+
+git config --global user.email "ahmed.belmabrouk@ensta-paris.fr"
+git config --global user.name "ahmed.belmabrouk"

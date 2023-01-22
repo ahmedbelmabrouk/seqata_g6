@@ -1,0 +1,35 @@
+# Aircraft Landing Problem instance (ALP) version 1.0
+
+name alp_05_p20
+nb_planes 20
+nb_kinds 2
+freeze_time 45
+
+#    name  kind   at     E     T     L    ep    tp 
+plane  p1    1    55   130   156   560    10.0 10.0 
+plane  p2    1   113   188   247   727    10.0 10.0 
+plane  p3    2     8    83    91   498    30.0 30.0 
+plane  p4    2    11    86    95   503    30.0 30.0 
+plane  p5    2    21    96   106   528    30.0 30.0 
+plane  p6    2    26   101   113   541    30.0 30.0 
+plane  p7    2    27   102   113   537    30.0 30.0 
+plane  p8    2    26   101   112   530    30.0 30.0 
+plane  p9    2    31   106   118   541    30.0 30.0 
+plane p10    2    48   123   138   588    30.0 30.0 
+plane p11    1   166   241   308   790    10.0 10.0 
+plane p12    1   150   225   281   735    10.0 10.0 
+plane p13    2    68   143   162   640    30.0 30.0 
+plane p14    2    61   136   152   605    30.0 30.0 
+plane p15    1   168   243   302   761    10.0 10.0 
+plane p16    1   226   301   394   932    10.0 10.0 
+plane p17    2    68   143   160   613    30.0 30.0 
+plane p18    2    71   146   163   617    30.0 30.0 
+plane p19    2    64   139   154   591    30.0 30.0 
+plane p20    2    88   163   183   659    30.0 30.0 
+
+# Separation time between aircraft kinds
+sep 1 1 3
+sep 1 2 15
+sep 2 1 15
+sep 2 2 8
+

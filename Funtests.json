@@ -1,0 +1,181 @@
+[
+{
+    "__comments": [
+        "Fichier de tests fonctionnels pour projet Seqata (julia)",
+        "Astuce pour écrire des commentaires en json (tableau de chaines",
+        "Pour inactiver une commande (i.e avant mise au poit)",
+        "- insérer \"#\" en début du champs \"cmd\"",
+        "Si les champs exp_rpat, exp_duration, exp_length sont vides)",
+        "=> leur test est ignoré)",
+        "Pour tester un résultat strictement vide : utiliser exp_rpat: (?m:^$)"
+    ]
+},
+
+{
+    "sid": "arg-help",
+    "desc": "Test de l'option --help (alias -h)",
+    "cmd": "./bin/run.jl -h",
+    "res_desc": "Affiche la syntaxe détaillée du programme",
+    "exp_rpat": "(?m:usage:.*--outdir OUTDIR.*--version)",
+    "exp_duration": 15,
+    "exp_duration_margin": 12,
+    "exp_length": 8462,
+    "exp_length_margin": -1
+},
+{
+    "sid": "help",
+    "desc": "test de l'action action help",
+    "cmd": "./bin/run.jl help",
+    "res_desc": "Affiche la liste des actions dispos et résumé syntaxe",
+    "exp_rpat": "(?m:Liste des actions dispo.*dmip.*Résumé de la syntaxe.*LOGLEVEL)",
+    "exp_duration": 10,
+    "exp_duration_margin": 10,
+    "exp_length": 3194,
+    "exp_length_margin": -1
+},
+{
+    "sid": "interactive",
+    "desc": "test du mode interactif",
+    "cmd": "julia --project -iL ./bin/run.jl  -e 'println(\"COUCOU\"); exit()'",
+    "res_desc": "Affiche \"Début de mode interactif\" puis \"COUCOU\" puis quitte",
+    "exp_rpat": "(?m:Début de mode interactif.*COUCOU)",
+    "exp_duration": 30,
+    "exp_duration_margin": 20,
+    "exp_length": 11646,
+    "exp_length_margin": -1
+},
+{
+    "sid": "timing-earliest",
+    "desc": "Résolution du sous pb de timing avec l'algo earliest pour alp01*",
+    "cmd": "./bin/run.jl tim -t earliest -i data/01.alp  -p 3,4,5,6,7,8,9,1,10,2",
+    "res_desc": "solution de coût 2830.0 ",
+    "exp_rpat": "(?m:action timing.*cost=2830.*timing)",
+    "exp_duration": 11,
+    "exp_duration_margin": -1,
+    "exp_length": 0,
+    "exp_length_margin": -1
+},
+{
+    "sid": "timing-lp",
+    "desc": "Résolution du sous pb de timing avec l'algo lp pour alp01",
+    "cmd": "./bin/run.jl tim -t lp -i data/01.alp  -p 3,4,5,6,7,8,9,1,10,2",
+    "res_desc": "solution de coût 70.0 ",
+    "exp_rpat": "(?m:action timing.*cost=700.*timing)",
+    "exp_duration": 19,
+    "exp_duration_margin": -1,
+    "exp_length": 0,
+    "exp_length_margin": -1
+},
+{
+    "sid": "val-earliest",
+    "desc": "Validation de la solution alp01* générée avec algo de timing earliest",
+    "cmd": "./bin/run.jl val -i data/01.alp -s test/data/alp_01_p10=2830.0.sol",
+    "res_desc": "solution (même non optimale) doir doit être valide",
+    "exp_rpat": "(?m:Solution correcte de coût : 2830.0)",
+    "exp_duration_": 60,
+    "exp_duration": 30,
+    "exp_duration_margin": 25,
+    "exp_length": 0,
+    "exp_length_margin": -1
+},
+{
+    "sid": "val-lp",
+    "desc": "Validation de la solution alp01* avec algo lp",
+    "cmd": "./bin/run.jl val -i data/01.alp -s test/data/alp_01.sol",
+    "res_desc": "solution doit être valide",
+    "exp_rpat": "(?m:Solution correcte de coût : 700.0)",
+    "exp_duration": 70,
+    "exp_duration_margin": 65,
+    "exp_length": 0,
+    "exp_length_margin": -1
+},
+{
+    "sid": "carlo-earliest",
+    "desc": "Résolution par action carlo avec earliestTimingSolver",
+    "cmd": "./bin/run.jl carlo data/01.alp  -t earliest -n 10000000 -L1",
+    "res_desc": "=2110 en 20.8s avec 520_000 calls/sec (10e6 itér)",
+    "exp_rpat": "(?m:action carlo.*cost=2110.*carlo)",
+    "exp_duration": 8,
+    "exp_duration_margin": -1,
+    "exp_length": 0,
+    "exp_length_margin": -1
+},
+{
+    "sid": "explore-lp-gurobi",
+    "desc": "explore et programmation linéaire avec Gurobi",
+    "cmd": "./bin/run.jl explore  -i data/04.alp --presort rtarget -n 200  -t lp -x gurobi",
+    "res_desc": "=> Solution faisable de coût ~20000.0..46000.0 en 5.6s avec Gurobi",
+    "exp_rpat": "(?m:timing_algo_solver  =>  lp.*external_lp_solver  =>  gurobi.*Fin de l'action explore)",
+    "exp_duration": 30,
+    "exp_duration_margin": -1,
+    "exp_length": 5000,
+    "exp_length_margin": -1
+},
+{
+    "sid": "explore-lp-cplex",
+    "desc": "explore et programmation linéaire avec CPLEX",
+    "cmd": "./bin/run.jl explore  -i data/04.alp --presort rtarget -n 200  -t lp -x cplex",
+    "res_desc": "=> Solution faisable de coût ~20000.0..46000.0 en 5.6s avec CPLEX",
+    "exp_rpat": "(?m:timing_algo_solver  =>  lp.*external_lp_solver  =>  cplex.*Fin de l'action explore)",
+    "exp_duration": 30,
+    "exp_duration_margin": -1,
+    "exp_length": 5000,
+    "exp_length_margin": -1
+},
+{
+    "sid": "explore-lp-cbc",
+    "desc": "explore et programmation linéaire avec Cbc",
+    "cmd": "./bin/run.jl explore  -i data/04.alp --presort rtarget -n 200  -t lp -x cbc",
+    "res_desc": "=> Solution faisable de coût ~20000.0..46000.0 en 5.6s avec CBC",
+    "exp_rpat": "(?m:timing_algo_solver  =>  lp.*external_lp_solver  =>  cbc.*Fin de l'action explore)",
+    "exp_duration": 30,
+    "exp_duration_margin": -1,
+    "exp_length": 5000,
+    "exp_length_margin": -1
+},
+{
+    "sid": "explore-lp-tulip",
+    "desc": "explore et programmation linéaire avec Tulip",
+    "cmd": "./bin/run.jl explore  -i data/04.alp --presort rtarget -n 200  -t lp -x tulip",
+    "res_desc": "=> Solution faisable de coût ~20000.0..46000.0 en 5.6s avec CPLEX",
+    "exp_rpat": "(?m:timing_algo_solver  =>  lp.*external_lp_solver  =>  tulip.*Fin de l'action explore)",
+    "exp_duration": 40,
+    "exp_duration_margin": -1,
+    "exp_length": 5000,
+    "exp_length_margin": -1
+},
+{
+    "sid": "mip-cbc",
+    "desc": "Résolution frontale MIP avec solveur Cbc",
+    "cmd": "./bin/run.jl mip -i data/02.alp -x cbc",
+    "res_desc": "sol 1480* en 6.3s",
+    "exp_rpat": "(?m:external_lp_solver  =>  cplex.*cost 1480.*action mip$)",
+    "exp_duration": 40,
+    "exp_duration_margin": -1,
+    "exp_length": 0,
+    "exp_length_margin": -1
+},
+{
+    "sid": "dmip-cplex",
+    "desc": "Résolution frontale discrétisée avec CPLEX",
+    "cmd": "./bin/run.jl dmip -i data/01.alp -x cplex",
+    "res_desc": "solution 700* en ~8.2s",
+    "exp_rpat": "(?m:external_lp_solver  =>  cplex.*cost 700.*action dmip$)",
+    "exp_duration": 68,
+    "exp_duration_margin": -1,
+    "exp_length": 0,
+    "exp_length_margin": -1
+},
+
+{
+    "sid": "PROTO",
+    "desc": "Description",
+    "cmd": "/bin/ls /bin/ls",
+    "res_desc": "Description du résultat attendu",
+    "exp_rpat": "(?m:^/bin/ls$)",
+    "exp_duration": 0,
+    "exp_duration_margin": -1,
+    "exp_length": 0,
+    "exp_length_margin": -1
+}
+]

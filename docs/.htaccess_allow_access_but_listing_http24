@@ -1,0 +1,10 @@
+# On autorise l'accès à tous les fichiers ...
+Require all granted
+
+# On autorise l'accès à un fichier d'index.html s'il existe
+DirectoryIndex index.html index.php
+
+# Mais pas au listing du répertoire !
+Options -Indexes
+
+#./

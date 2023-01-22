@@ -1,0 +1,21 @@
+# On ignore les fichiers temporaires de vim et d'emacs
+.*.swp
+.*.swo
+*~
+.DS_Store
+*/.DS_Store
+
+
+
+# Je veux que git gère le répertoire _tmp, mais pas son contenu
+/_tmp/*
+!_tmp/.gitkeep
+
+/distrib/*
+!distrib/.gitkeep
+
+/docs/build
+
+
+#./
+
