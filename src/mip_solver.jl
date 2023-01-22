@@ -104,9 +104,9 @@ function buildMipModel(sv::MipSolver)
 
     @constraint(sv.model, [p in planes], x[p.id]>=p.lb) #Pour être dans le bon intervalle
     @constraint(sv.model, [p in planes], x[p.id]<=p.ub)
-    M= sum(get_sep(sv.inst,planes[i],planes[j]) for i in 1:n , j in 1:n)
-    println("====> ",M)
-    @constraint(sv.model,[ i in 1:n , j in 1:n , i!=j], x[planes[j].id]-x[planes[i].id]  + M* (1-b[i,j]) >= get_sep(sv.inst,planes[i],planes[j])) #Entre deux avions
+    M= [planes[i].ub + get_sep(sv.inst,planes[i],planes[j]) - planes[j].lb for i in 1:n , j in 1:n]
+    #println("====> ",M)
+    @constraint(sv.model,[ i in 1:n , j in 1:n , i!=j], x[planes[j].id]-x[planes[i].id]  + M[i,j]* (1-b[i,j]) >= get_sep(sv.inst,planes[i],planes[j])) #Entre deux avions
     for i in 1:n
         for j in 1:n 
             if j!=i
