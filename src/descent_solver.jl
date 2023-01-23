@@ -127,7 +127,7 @@ function solve!(
     sv::DescentSolver;
     nb_cons_reject_max::Int = 0,
     startsol::Union{Nothing,Solution} = nothing,
-    durationmax::Float64 = 0.0,
+    durationmax::Float64 = 0.0
 )
     ln2("BEGIN solve!(DescentSolver)")
     if durationmax != 0.0
@@ -159,7 +159,6 @@ function solve!(
 
     while !finished(sv)
         sv.nb_test += 1
-
         #error("\n\nMéthode solve!(DescentSolver, ...) non implantée: AU BOULOT :-)\n\n")
 
         # On peut ici tirer aléatoirement des voisinages différents plus ou
@@ -173,10 +172,13 @@ function solve!(
         # On modifie testsol, puis on teste sa valeur, puis on...
         #
         # ...
-        i1 = rand(1:sv.inst.nb_planes)
-        i2 = rand(1:sv.inst.nb_planes)
-        #i2 = rand(max(i1-2,1):min(i1+2,sv.inst.nb_planes)) #on choisit une permutation dans un intervalle centré de 2.s
-        swap!(sv.testsol, i1, i2)
+        
+        nom_voisinage="t3" # le voisinage choisie =t3
+        voisins=generate_nbh(sv.inst.nb_planes,nom_voisinage)[1]
+        shuffle!(voisins) 
+        v=voisins[1] # un voisin choisie aleatoirement 
+        permu!(sv.testsol,v.indices1,v.indices2)
+        
         degrad = sv.testsol.cost-sv.bestsol.cost
         if degrad <0
             copy!(sv.bestsol,sv.testsol)

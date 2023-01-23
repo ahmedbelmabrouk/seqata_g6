@@ -923,7 +923,7 @@ function generate_neighborhood(n::Int;
                             add_permu=false,
                             shift_min::Int=1,
                             shift_max::Int=-1,
-                            # gap_min::Int=1, # TODO
+                            gap_min::Int=1, # TODO
                             gap_max::Int=-1,
                             permu_size=4,
                             )
