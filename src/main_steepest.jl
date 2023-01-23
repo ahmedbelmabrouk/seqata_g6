@@ -24,10 +24,12 @@ function main_steepest()
     # duration = 300.0 # secondes
     duration = 1.0*Args.get(:duration)
     itermax = Args.get(:itermax)
-
+    fb_ = Args.get(:move_to_first_best)
+    nbh_ = Args.get(:nbh)
+    #print(nbh_)
     # Voir aussi option startsol de la méthode solve!
     ms_start = ms() # nb secondes depuis démarrage avec précision à la ms
-    solve!(sv, durationmax = duration)
+    solve!(sv, durationmax = duration, fb=fb_, nbh=string(nbh_))
     ms_stop = ms()
 
     bestsol = sv.bestsol

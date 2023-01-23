@@ -121,13 +121,15 @@ function solve!(
     else
         nom_voisinage=nbh
     end
-    #print("====> le nom du voisinage est: ",nom_voisinage)
+    #print("====> FB egale= ",fb)
     while !finished(sv)
         movefb=false
         #parametres
         prevcost=sv.cursol.cost
         #nous faisons appel à la fonction generate_nbh
-        voisins=generate_nbh(sv.inst.nb_planes,nom_voisinage)[1]
+        #print("============>",nbh,"00000000")
+        voisins=generate_nbh(sv.inst.nb_planes,nom_voisinage)[1] 
+        #print("===========> nbre des voisins : ", length(voisins), "<=========")
         shuffle!(voisins) #on parcours aleatoirement les voisins
         for v in voisins
             tempsol = Solution(sv.cursol)
