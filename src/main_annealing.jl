@@ -16,7 +16,7 @@ function main_annealing()
     initial_sort!(sol)
     ln1("Solution initiale envoyée au solver")
     ln1(to_s(sol))
-
+    
     if Args.get(:nb_cons_no_improv_max) != 0   # 0 pour automatique
         my_improv_max = Args.get(:nb_cons_no_improv_max)
     else # 0 pour automatique
@@ -30,8 +30,8 @@ function main_annealing()
 
     # Choix des options pour le solver
     user_opts = Dict(
-        # :startsol           => nothing,  # nothing pour auto à partir de l'instance
-        :startsol => sol,  # nothing pour auto à partir de l'instance
+         :startsol           => nothing,  # nothing pour auto à partir de l'instance
+        #:startsol => sol,  # nothing pour auto à partir de l'instance
         :step_size => inst.nb_planes,   # à renommer en step_size
         # :temp_init          => -1.0, # -1.0 pour automatique
         :temp_init => nothing, # nothing pour automatique
@@ -52,6 +52,7 @@ function main_annealing()
     ms_stop = ms()
 
     bestsol = sv.bestsol
+    write(bestsol)
     print_sol(bestsol)
 
     nb_calls = bestsol.solver.nb_calls

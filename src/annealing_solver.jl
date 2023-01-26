@@ -1,7 +1,10 @@
 export AnnealingSolver
-export finished, get_stats, guess_temp_init
-export solve
+export finished, solve! ,get_stats, guess_temp_init
+#export solve!
+"""
+anealing solver
 
+"""
 mutable struct AnnealingSolver
     inst::Instance
     opts::Dict
@@ -29,82 +32,93 @@ mutable struct AnnealingSolver
     cursol::Solution        # Solution courante
     bestsol::Solution       # meilleure Solution rencontrée
     testsol::Solution       # nouvelle solution courante potentielle
-
-    function AnnealingSolver(inst::Instance, user_opts = Dict())
-        # ...
-        error("\n\nConstructeur de AnnealingSolver non implanté : AU BOULOT :-)\n\n")
-        # ...
-        this = new()
-        this.inst = inst
-
-        this.opts = Dict(
-            :startsol => nothing,    # nothing pour auto à partir de l'instance
-            :step_size => 1,
-            :temp_init => -1.0, # -1.0 pour automatique
-            :temp_init_rate => 0.75,  # valeur standard : 0.8
-            :temp_mini => 0.000_001,
-            :temp_coef => 0.999_95,
-            :nb_cons_reject_max => 1_000_000_000, # infini
-            :nb_cons_no_improv_max => 5000 * inst.nb_planes,
-        )
-        nb_options = length(this.opts)
-        merge!(this.opts, user_opts)
-
-        if length(this.opts) != nb_options
-            error("Au moins une option du recuit est inconnue dans :\n$(keys(user_opts))")
-        end
-
-        if user_opts[:startsol] == nothing
-            this.cursol = Solution(inst)
-        else
-            this.cursol = user_opts[:startsol]
-        end
-
-        # On calcule éventuellement la température initiale automatiquement
-        if this.opts[:temp_init] == nothing
-            this.opts[:temp_init] =
-                guess_temp_init(this.cursol, this.opts[:temp_init_rate], 100)
-        end
-
-        # À POURSUIVRE (AU BOULOT)
-        # ...
-
-        this.bestsol = Solution(this.cursol)
-        this.testsol = Solution(this.cursol)
-
-        return this
-    end
+    prevsol::Solution       # Prend la valeur de solution courante avant changement
+    AnnealingSolver() = new() # Constructeur par défaut
+    
 end
+
+function AnnealingSolver(inst::Instance, user_opts = Dict())
+    # ...
+    #error("\n\nConstructeur de AnnealingSolver non implanté : AU BOULOT :-)\n\n")
+    # ...
+    this =AnnealingSolver()
+    this.inst = inst
+    this.nb_test = 0
+    this.nb_move = 0
+
+    this.opts = Dict(
+        :startsol => nothing,    # nothing pour auto à partir de l'instance
+        :step_size => 1,
+        :temp_init => -1.0, # -1.0 pour automatique
+        :temp_init_rate => 0.75,  # valeur standard : 0.8
+        :temp_mini => 0.000_001,
+        :temp_coef => 0.999_95,
+        :nb_cons_reject_max => 1_000_000_000, # infini
+        :nb_cons_no_improv_max => 5000 * inst.nb_planes)
+        nb_options = length(this.opts) 
+    #print(typeof(this.opts[:startsol]))
+    merge!(this.opts, user_opts)
+
+    if length(this.opts) != nb_options
+        error("Au moins une option du recuit est inconnue dans :\n$(keys(user_opts))")
+    end
+
+    if user_opts[:startsol] == nothing
+        # Pas de solution initiale => on en crée une
+        this.cursol = Solution(inst)
+        if Args.get(:presort) == :none
+            # initial_sort!(this.cursol, presort=:shuffle) # proto
+             initial_sort!(this.cursol, presort = :target) # diam
+        else
+            initial_sort!(this.cursol, presort = Args.get(:presort))
+        end
+    else
+        this.cursol = startsol
+        if lg2()
+            println("Dans SteepestSolver : this.cursol = this.opts[:startsol] ")
+            println("this.cursol", to_s(this.cursol))
+        end
+    end
+    
+    this.bestsol = Solution(this.cursol)
+    this.testsol = Solution(this.cursol)
+    this.prevsol = Solution(this.cursol)
+    return this
+end
+
 # stop : retourne true ssi l'état justifie l'arrêt de l'algorithme
 # (dommage qu'on ne puisse pas l'appeler stop? comme en ruby !)
 # On pourra utiliser d'autres critères sans toucher au programme principal
-#
+
 function finished(sv::AnnealingSolver)
-    # AU BOULOT !
-    return false
+    #sv.duration = time_ns() / 1_000_000_000 - sv.starttime
+    #too_long = sv.duration >= sv.durationmax
+    #print("nb test ===>",sv.nb_test)
+    #too_long = sv.nb_test >= 10 000 
+    too_long =false
+    other = false 
+    stop = too_long || other
+    if stop
+        if lg1()
+            println("\nSTOP car :")
+            println("     sv.nb_test=$(sv.nb_test)")
+            #println("     sv.nb_move=$(nb_move)")
+            #println("     (à compléter par vos autres critères d'arrêt)")
+            println(get_stats(sv))
+        end
+        return true
+    else
+        return false
+    end
 end
 
 function get_stats(sv::AnnealingSolver)
     txt = "
-    Paramètres de l'objet AnnealingSolver :
-    step_size=         $(sv.step_size)
-    temp_init=         $(sv.temp_init)
-    temp_init_rate=    $(sv.opts[:temp_init_rate])
-    temp_mini=         $(sv.temp_mini)
-    temp_coef=         $(sv.temp_coef)
-    nb_cons_reject_max=$(sv.nb_cons_reject_max)
-    Etat de l'objet AnnealingSolver :
-    nb_steps=$(sv.nb_steps) step_size=$(sv.step_size)
-    nb_cons_reject=$(sv.nb_cons_reject) nb_cons_reject_max=$(sv.nb_cons_reject_max)
-    nb_cons_no_improv=$(sv.nb_cons_no_improv) nb_cons_no_improv_max=$(sv.nb_cons_no_improv_max)
+    
+    
     nb_test=$(sv.nb_test)
     nb_move=$(sv.nb_move)
-    nb_reject=$(sv.nb_reject)
-    temp=$(sv.temp) temp_init=$(sv.opts[:temp_init])
-    testsol.cost=$(sv.testsol.cost)
-    cursol.cost=$(sv.cursol.cost)
-    bestsol.cost=$(sv.bestsol.cost)
-    sv.testsol.solver.nb_infeasable=$(sv.testsol.solver.nb_infeasable)
+    
     "
     return replace(txt, r"^ {4}" => "")
 end
@@ -151,18 +165,133 @@ end
 #
 function guess_temp_init(sol::Solution, taux_cible = 0.8, nb_degrad_max = 1000)
     # A COMPLÉTER EVENTUELLEMENT
-    t_init = 0    # stupide : pour faire une descente pure !
+    t_init = 50    # stupide : pour faire une descente pure !
     # Initialisations diverses et calculs savants !
     # ...
     return t_init
 end
+function new_temp(t,c = 0.01)
+    return (1-c)t
+end
 
-function solve!(sv::AnnealingSolver)
+function solve!(sv::AnnealingSolver,startsol::Union{Nothing,Solution} = nothing)
     println("BEGIN solve!(AnnealingSolver)")
 
-    error("\n\nMéthode solve!(sv::AnnealingSolver) non implantée: AU BOULOT :-)\n\n")
+    #error("\n\nMéthode solve!(sv::AnnealingSolver) non implantée: AU BOULOT :-)\n\n")
     # ...
+    """
+    if durationmax != 0.0
+        sv.durationmax = Float64(durationmax)
+    end
+    """
+    #Phase de Construction / initialisation 
+    if startsol != nothing
+        sv.cursol = startsol
+        copy!(sv.bestsol, sv.cursol) # on réinitialise bestsol à cursol
+        copy!(sv.testsol, sv.cursol)
+        if lg2()
+            println("Dans steepestSolver : sv.cursol = sv.opts[:startsol] ")
+            println("sv.cursol : ", to_s(sv.cursol))
+        end
+    else
+        # on garde la dernière solution sv.cursol
+    end
+    t=guess_temp_init(sv.cursol)
+    #sv.starttime = time_ns() / 1_000_000_000
 
-    lg2() && println(get_stats(sv))
-    println("END solve!(AnnealingSolver)")
+    if lg3()
+        println("Début de solve : get_stats(sv)=\n", get_stats(sv))
+    end
+
+    ln1("\niter <nb_test> =<nb_move>+<nb_reject> <movedesc> => bestcost=...")
+    #Phase d'amelioration 
+    while !finished(sv) && t > 0.001
+        #DEBUT====> VND=variable neighborhood descent <====
+                 #initialisation
+        #neighborhood_structures=[["P3","p4","p5","p6","p7","p8"],["T3","t4","t5","t6","t7","t8"],["s3","T4","S4","d4","D12.7","2T4","2T4g12"]]
+        neighborhood_structures=["P3","T4","S4","d4","D12.7","2T4","2T4g12"] #une série de voisinages aleatoire
+        #neighborhood_structures=["P3","p4","p5","p6","p7","p8"] #une série de voisinages croissants et non redondants
+        #neighborhood_structures=["T3","t4","t5","t6","t7","t8"] #une série de voisinages croissants et non redondants
+                 #amelioration
+        improv=true
+        copy!(sv.prevsol,sv.cursol)
+        while  improv
+            improv=false
+            k=1
+            #voisins=generate_nbh(sv.inst.nb_planes,neighborhood_structures[k])[1] 
+            while k < length(neighborhood_structures)
+                prevcost=sv.cursol.cost
+                voisins=generate_nbh(sv.inst.nb_planes,neighborhood_structures[k])[1]
+                #Exploration complete de Voisinage :on cherche le meilleur Voisinage
+                
+                for v in voisins
+                    tempsol = Solution(sv.cursol)
+                    permu!(tempsol,v.indices1,v.indices2)
+                    sv.nb_test += 1
+                    degrad = tempsol.cost - prevcost
+                    ln4("degrad=$(degrad)")
+                    if degrad < 0 # Ce voisin est meilleur : on le considere
+                        tempsol.cost < sv.testsol.cost
+                        copy!(sv.testsol,tempsol)
+                    end
+                    lg3("+")
+                end
+                #Move or NOT 
+                if !isequal(sv.cursol.planes,sv.testsol.planes)
+                    copy!(sv.cursol,sv.testsol) #On prend le meilleur candidat que l'on ait trouve
+                    sv.nb_move+=1
+                    k=1
+                    improv=true
+                    println("=============NEW SOL IMPROVED===============")
+                else
+                    k+=1 #on incremente k
+                    println("=======We didn't move===: ",k,"=====")
+                end
+                
+            end
+        end
+        #FIN====> VND=variable neighborhood descent <====
+        
+        #Critere d'acceptation 
+        delta = sv.cursol.cost - sv.prevsol.cost
+        println(">> DELTA= ",delta)
+        if (delta < 0) 
+            # Mise à jour de sv.bestsol
+            copy!(sv.bestsol, sv.cursol)
+            if lg1()
+                msg = string("\niter ", sv.nb_test, ", move ", sv.nb_move)
+                if lg2()
+                    # affiche coût + ordre des avions
+                    msg *= string(" => ", to_s(sv.bestsol))
+                else
+                    # affiche seulement le coût
+                    msg *= string(" => ", sv.bestsol.cost)
+                end
+                print(msg)
+            end
+        elseif ((x=rand()) < (y=exp(-delta/t)))
+            # on garde la dernière solution sv.cursol
+            println("la valeur de x: ",x, "et y: ",y)
+            if lg1()
+                msg = string("\niter ", sv.nb_test, ", move ", sv.nb_move)
+                if lg2()
+                    # affiche coût + ordre des avions
+                    msg *= string(" => ", to_s(sv.cursol))
+                else
+                    # affiche seulement le coût
+                    msg *= string(" => ", sv.cursol.cost)
+                end
+                print(msg)
+            end
+        else
+            #on n'accepte pas la nouvelle solution sv.cursol
+            copy!(sv.cursol, sv.prevsol)
+        end
+        #Mise a jour de T
+        t=new_temp(t)
+        println("\n La nouvelle temperature : ",t)
+
+    end # fin while !finished
+    #lg2() && println(get_stats(sv))
+    ln2("END solve!(AnnealingSolver)")
 end
